@@ -1,4 +1,4 @@
-import axios from "axios";
+import api from "../lib/axios";
 import {
   CategoriesAPIResponseSchema,
   DrinksAPIResponseSchema,
@@ -7,28 +7,45 @@ import {
 import { Drink, SearchFilter } from "../types";
 
 export async function getCategories() {
-  const url = "https://www.thecocktaildb.com/api/json/v1/1/list.php?c=list";
-  const { data } = await axios(url);
-  const result = CategoriesAPIResponseSchema.safeParse(data);
-  if (result.success) {
-    return result.data;
+  try {
+    const { data } = await api.get("/list.php?c=list");
+    const result = CategoriesAPIResponseSchema.safeParse(data);
+    if (result.success) {
+      return result.data;
+    }
+    throw new Error("Error al validar la respuesta de categorías");
+  } catch (error) {
+    console.error("Error al obtener categorías:", error);
+    throw error;
   }
 }
 
 export async function getRecipes(filters: SearchFilter) {
-  const url = `https://www.thecocktaildb.com/api/json/v1/1/filter.php?c=${filters.category}&i=${filters.ingredient}`;
-  const { data } = await axios(url);
-  const result = DrinksAPIResponseSchema.safeParse(data);
-  if (result.success) {
-    return result.data;
+  try {
+    const { data } = await api.get(
+      `/filter.php?c=${filters.category}&i=${filters.ingredient}`,
+    );
+    const result = DrinksAPIResponseSchema.safeParse(data);
+    if (result.success) {
+      return result.data;
+    }
+    throw new Error("Error al validar la respuesta de recetas");
+  } catch (error) {
+    console.error("Error al obtener recetas:", error);
+    throw error;
   }
 }
 
 export async function getRecipeByID(id: Drink["idDrink"]) {
-  const url = `https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${id}`;
-  const { data } = await axios(url);
-  const result = RecipeAPIResponseSchema.safeParse(data.drinks[0]);
-  if (result.success) {
-    return result.data;
+  try {
+    const { data } = await api.get(`/lookup.php?i=${id}`);
+    const result = RecipeAPIResponseSchema.safeParse(data.drinks[0]);
+    if (result.success) {
+      return result.data;
+    }
+    throw new Error("Error al validar la respuesta de la receta");
+  } catch (error) {
+    console.error("Error al obtener la receta por ID:", error);
+    throw error;
   }
 }
